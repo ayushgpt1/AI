@@ -1,0 +1,84 @@
+from collections import deque
+
+def bidirectional_search(graph, start, goal):
+    if start == goal:
+        return [start]
+
+    # Initialize two sets for forward and backward search
+    visited_start = {start}
+    visited_goal = {goal}
+
+    # Queues for forward and backward search
+    queue_start = deque([start])
+    queue_goal = deque([goal])
+
+    # Parents to reconstruct the path
+    parent_start = {start: None}
+    parent_goal = {goal: None}
+
+    while queue_start and queue_goal:
+        # Expand from the start
+        if queue_start:
+            result = expand_node(graph, queue_start, visited_start, visited_goal, parent_start)
+            if result:
+                return construct_path(result, parent_start, parent_goal, from_start=True)
+
+        # Expand from the goal
+        if queue_goal:
+            result = expand_node(graph, queue_goal, visited_goal, visited_start, parent_goal)
+            if result:
+                return construct_path(result, parent_start, parent_goal, from_start=False)
+
+    return None  # No path found
+
+def expand_node(graph, queue, visited_from_side, visited_other_side, parent_from_side):
+    node = queue.popleft()
+
+    for neighbor in graph.get(node, []):
+        if neighbor not in visited_from_side:
+            visited_from_side.add(neighbor)
+            queue.append(neighbor)
+            parent_from_side[neighbor] = node
+
+            if neighbor in visited_other_side:
+                return neighbor
+    return None
+
+def construct_path(meeting_node, parent_start, parent_goal, from_start):
+    # Path from start to meeting node
+    path_start = []
+    node = meeting_node
+    while node:
+        path_start.append(node)
+        node = parent_start[node]
+    path_start.reverse()
+
+    # Path from meeting node to goal
+    path_goal = []
+    node = meeting_node if from_start else parent_goal[meeting_node]
+    while node:
+        path_goal.append(node)
+        node = parent_goal[node]
+
+    return path_start + path_goal
+
+# Example usage:
+if __name__ == "__main__":
+    # Example graph as adjacency list
+    graph = {
+        'A': ['B', 'C'],
+        'B': ['A', 'D', 'E'],
+        'C': ['A', 'F'],
+        'D': ['B'],
+        'E': ['B', 'F'],
+        'F': ['C', 'E']
+    }
+
+    start = 'A'
+    goal = 'F'
+    
+    path = bidirectional_search(graph, start, goal)
+    if path:
+        print(f"Path from {start} to {goal}: {' -> '.join(path)}")
+    else:
+        print(f"No path found from {start} to {goal}")
