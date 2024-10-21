@@ -1,0 +1,20 @@
+# Function to implement Bayes' Theorem
+def bayes_theorem(prior_A, likelihood_B_given_A, prior_B):
+    # Bayes' theorem formula
+    posterior_A_given_B = (likelihood_B_given_A * prior_A) / prior_B
+    return posterior_A_given_B
+
+# Example: Calculate P(King|Face)
+# P(King): Probability that the card is a king
+prior_King = 4 / 52
+
+# P(Face): Probability that a card is a face card
+prior_Face = 12 / 52  # 3 face cards (J, Q, K) per suit, 4 suits total
+
+# P(Face|King): Probability of face card given it's a king
+likelihood_Face_given_King = 1  # If it's a king, it is also a face card
+
+# Applying Bayes' Theorem
+posterior_King_given_Face = bayes_theorem(prior_King, likelihood_Face_given_King, prior_Face)
+
+print(f"Posterior Probability P(King|Face): {posterior_King_given_Face:.4f}")
