@@ -1,0 +1,29 @@
+import math
+
+# Define the minimax function
+def minimax(depth, node_index, is_maximizing, scores, h):
+    # Base case: if we reach the maximum depth or leaf node
+    if depth == h:
+        return scores[node_index]
+    
+    if is_maximizing:
+        best_value = -math.inf
+        for i in range(2):  # Assuming binary tree for simplicity
+            value = minimax(depth + 1, node_index * 2 + i, False, scores, h)
+            best_value = max(best_value, value)
+        return best_value
+    else:
+        best_value = math.inf
+        for i in range(2):
+            value = minimax(depth + 1, node_index * 2 + i, True, scores, h)
+            best_value = min(best_value, value)
+        return best_value
+
+# Example usage
+if __name__ == "__main__":
+    # Leaf node scores
+    scores = [3, 5, 6, 9, 1, 2, 0, -1]
+    height = 3  # Height of the tree
+
+    optimal_value = minimax(0, 0, True, scores, height)
+    print("The optimal value is:", optimal_value)
