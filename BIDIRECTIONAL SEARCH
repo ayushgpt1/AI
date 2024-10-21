@@ -4,81 +4,47 @@ def bidirectional_search(graph, start, goal):
     if start == goal:
         return [start]
 
-    # Initialize two sets for forward and backward search
-    visited_start = {start}
-    visited_goal = {goal}
+    # Sets to store visited nodes
+    visited_start, visited_goal = {start}, {goal}
 
-    # Queues for forward and backward search
-    queue_start = deque([start])
-    queue_goal = deque([goal])
-
-    # Parents to reconstruct the path
-    parent_start = {start: None}
-    parent_goal = {goal: None}
+    # Queues for BFS from both sides
+    queue_start, queue_goal = deque([start]), deque([goal])
 
     while queue_start and queue_goal:
-        # Expand from the start
-        if queue_start:
-            result = expand_node(graph, queue_start, visited_start, visited_goal, parent_start)
-            if result:
-                return construct_path(result, parent_start, parent_goal, from_start=True)
+        # Search from start side
+        if bfs_step(graph, queue_start, visited_start, visited_goal):
+            return construct_path(start, goal, visited_start & visited_goal)
 
-        # Expand from the goal
-        if queue_goal:
-            result = expand_node(graph, queue_goal, visited_goal, visited_start, parent_goal)
-            if result:
-                return construct_path(result, parent_start, parent_goal, from_start=False)
+        # Search from goal side
+        if bfs_step(graph, queue_goal, visited_goal, visited_start):
+            return construct_path(start, goal, visited_start & visited_goal)
 
-    return None  # No path found
-
-def expand_node(graph, queue, visited_from_side, visited_other_side, parent_from_side):
-    node = queue.popleft()
-
-    for neighbor in graph.get(node, []):
-        if neighbor not in visited_from_side:
-            visited_from_side.add(neighbor)
-            queue.append(neighbor)
-            parent_from_side[neighbor] = node
-
-            if neighbor in visited_other_side:
-                return neighbor
     return None
 
-def construct_path(meeting_node, parent_start, parent_goal, from_start):
-    # Path from start to meeting node
-    path_start = []
-    node = meeting_node
-    while node:
-        path_start.append(node)
-        node = parent_start[node]
-    path_start.reverse()
+def bfs_step(graph, queue, visited_from, visited_other):
+    node = queue.popleft()
+    for neighbor in graph.get(node, []):
+        if neighbor not in visited_from:
+            visited_from.add(neighbor)
+            queue.append(neighbor)
+        if neighbor in visited_other:
+            return True
+    return False
 
-    # Path from meeting node to goal
-    path_goal = []
-    node = meeting_node if from_start else parent_goal[meeting_node]
-    while node:
-        path_goal.append(node)
-        node = parent_goal[node]
+def construct_path(start, goal, meet_point):
+    meeting_node = list(meet_point)[0]  # Get the meeting point
+    return f"Path from {start} to {goal}: {start} -> {meeting_node} -> {goal}"
 
-    return path_start + path_goal
+# Example usage
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D', 'E'],
+    'C': ['A', 'F'],
+    'D': ['B'],
+    'E': ['B', 'F'],
+    'F': ['C', 'E']
+}
 
-# Example usage:
-if __name__ == "__main__":
-    # Example graph as adjacency list
-    graph = {
-        'A': ['B', 'C'],
-        'B': ['A', 'D', 'E'],
-        'C': ['A', 'F'],
-        'D': ['B'],
-        'E': ['B', 'F'],
-        'F': ['C', 'E']
-    }
-
-    start = 'A'
-    goal = 'F'
-    
-    path = bidirectional_search(graph, start, goal)
-    if path:
-        print(f"Path from {start} to {goal}: {' -> '.join(path)}")
-    else:
-        print(f"No path found from {start} to {goal}")
+start, goal = 'A', 'F'
+path = bidirectional_search(graph, start, goal)
+print(path if path else "No path")
